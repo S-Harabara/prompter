@@ -14,8 +14,33 @@
         return res + "\n";
     }
 
-    const cleanCommentsRegex = s => s.replace(/\/\*[\s\S]*?\*\/|([^:]|^)\/\/.*$/gm, '$1').trim();
-    const minifyRegex = s => s.replace(/\s+/g, ' ').replace(/\/\*[\s\S]*?\*\/|\/\/.*/g, '').trim();
+    const cleanComments = s => {
+        if (!s) return s;
+        // 1. Remove multi-line comments
+        let res = s.replace(/\/\*[\s\S]*?\*\//g, '');
+        // 2. Remove single-line comments line by line
+        // We process line by line to ensure we don't accidentally remove URLs
+        return res.split('\n').map(line => {
+            const index = line.indexOf('//');
+            if (index !== -1) {
+                const before = line.substring(0, index);
+                // Heuristic: if it's not a URL, it's a comment
+                if (!before.trim().endsWith('http:') && !before.trim().endsWith('https:')) {
+                    return before.trimEnd();
+                }
+            }
+            return line;
+        }).join('\n');
+    };
+
+    const minifyCode = s => {
+        if (!s) return s;
+        // CRITICAL: To allow single-line minification, we MUST remove single-line comments first
+        // otherwise everything after the first // becomes a comment.
+        const noComments = cleanComments(s);
+        // Collapse all whitespace (including \n) into a single space
+        return noComments.replace(/\s+/g, ' ').trim();
+    };
 
     async function generatePrompt() {
         if ($selectedFiles.size === 0 && !$includeStructure) {
@@ -35,8 +60,8 @@
                 const file = await h.h.getFile();
                 let txt = await file.text();
                 
-                if ($removeComments) txt = cleanCommentsRegex(txt);
-                if ($minifyOutput) txt = minifyRegex(txt);
+                if ($removeComments) txt = cleanComments(txt);
+                if ($minifyOutput) txt = minifyCode(txt);
                 
                 res += `--- FILE: ${p} ---\n${txt}\n\n`;
             }
