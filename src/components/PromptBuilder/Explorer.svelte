@@ -1,6 +1,7 @@
 <script>
-	import { fileTreeData, selectedFiles } from '../../promptStore.js';
+	import { fileTreeData, selectedFiles, explorerFilter } from '../../promptStore.js';
 	import FileTreeItem from './FileTreeItem.svelte';
+	import FileFilters from './FileFilters.svelte';
 	import { selectFolder, resetFolder } from '../../utils/folderPicker.js';
 
 	function selectAll() {
@@ -12,6 +13,26 @@
 		};
 		getAll($fileTreeData, $selectedFiles);
 		selectedFiles.set($selectedFiles);
+	}
+
+	$: filteredTreeData = $explorerFilter
+		? filterTree($fileTreeData, $explorerFilter.toLowerCase())
+		: $fileTreeData;
+
+	function filterTree(nodes, query) {
+		return nodes
+			.map((node) => {
+				if (node.kind === 'directory') {
+					const filteredChildren = filterTree(node.children || [], query);
+					if (filteredChildren.length > 0 || node.name.toLowerCase().includes(query)) {
+						return { ...node, children: filteredChildren, expanded: true };
+					}
+				} else if (node.name.toLowerCase().includes(query)) {
+					return node;
+				}
+				return null;
+			})
+			.filter(Boolean);
 	}
 </script>
 
@@ -46,6 +67,8 @@
 		</div>
 
 		<div class="p-4 space-y-4 flex-grow flex flex-col overflow-hidden">
+			<FileFilters />
+
 			<!-- svelte-ignore a11y_click_events_have_key_events -->
 			<!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
 			<div
@@ -67,7 +90,7 @@
 					</div>
 				{:else}
 					<div class="pb-10 min-w-max">
-						{#each $fileTreeData as node}
+						{#each filteredTreeData as node}
 							<FileTreeItem {node} />
 						{/each}
 					</div>
