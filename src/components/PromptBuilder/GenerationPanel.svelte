@@ -92,6 +92,7 @@
 
 	import SkillsSelector from './SkillsSelector.svelte';
 	import TransformationPanel from './TransformationPanel.svelte';
+	import TokenPill from './TokenPill.svelte';
 	import { savedSkills, selectedSkillsForPrompt } from '../../skillsStore.js';
 
 	async function generatePrompt() {
@@ -173,15 +174,14 @@
 				<i class="fas fa-terminal text-emerald-500"></i> Generation
 			</h2>
 
-			<div class="flex items-center gap-4 text-[10px] font-bold uppercase text-gray-400">
-				<div class="flex items-center gap-1.5">
-					<span>Preview:</span>
+			<div class="flex items-center gap-3">
+				<!-- Size pill -->
+				<div class="flex items-center gap-1.5 text-[10px] font-bold uppercase text-gray-400">
+					<span>Size:</span>
 					<span class="text-emerald-500 font-mono">{($previewSize / 1024).toFixed(1)} KB</span>
 				</div>
-				<div class="flex items-center gap-1.5 border-l dark:border-dark-border pl-4">
-					<span>Tokens:</span>
-					<span class="text-blue-500 font-mono">{$previewTokens.toLocaleString()}</span>
-				</div>
+
+				<TokenPill tokens={$previewTokens} label="tokens" />
 			</div>
 		</div>
 

@@ -5,6 +5,7 @@
 		selectedFiles
 	} from '../../promptStore.js';
 	import { selectFolder } from '../../utils/folderPicker.js';
+	import TokenPill from './TokenPill.svelte';
 </script>
 
 <nav
@@ -30,10 +31,7 @@
 			<span class="opacity-60">Selected Files</span>
 			<span class="text-gray-900 dark:text-white font-mono">{$selectedFiles.size}</span>
 		</div>
-		<div class="flex flex-col items-end border-l dark:border-dark-border pl-8">
-			<span class="text-blue-500 opacity-80">Global Tokens (est)</span>
-			<span class="text-blue-600 dark:text-blue-400 font-mono tracking-normal">{$totalSelectedTokens.toLocaleString()}</span>
-		</div>
+		<TokenPill tokens={$totalSelectedTokens} label="Total Tokens" />
 	</div>
 
 	<div class="flex items-center gap-2">
