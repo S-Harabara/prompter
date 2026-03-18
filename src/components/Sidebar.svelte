@@ -3,6 +3,11 @@
 	export let isDark = false;
 
 	let isCollapsed = false;
+	const navItems = [
+		{ id: 'promptBuilder', label: 'Prompt Builder', icon: 'fas fa-hammer' },
+		{ id: 'codeReview', label: 'Code Review', icon: 'fas fa-code-pull-request' },
+		{ id: 'skillsLibrary', label: 'Skills Library', icon: 'fa-solid fa-splotch' }
+	];
 
 	function toggleTheme() {
 		isDark = !isDark;
@@ -29,34 +34,17 @@
 	</div>
 
 	<div class="space-y-4">
-		<h3 class="text-[10px] uppercase font-bold text-gray-400 tracking-widest">Navigation</h3>
-		<button
-			class="w-full flex items-center gap-3 p-3 rounded-xl cursor-pointer transition-colors font-bold text-sm
-            {$currentView === 'promptBuilder'
-				? 'bg-blue-50 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400'
-				: 'bg-transparent hover:bg-gray-100 dark:hover:bg-gray-800'}"
-			on:click={() => ($currentView = 'promptBuilder')}
-		>
-			<i class="fas fa-hammer w-5 text-center"></i> Prompt Builder
-		</button>
-		<button
-			class="w-full flex items-center gap-3 p-3 rounded-xl cursor-pointer transition-colors font-bold text-sm
-            {$currentView === 'skillsLibrary'
-				? 'bg-blue-50 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400'
-				: 'bg-transparent hover:bg-gray-100 dark:hover:bg-gray-800'}"
-			on:click={() => ($currentView = 'skillsLibrary')}
-		>
-			<i class="fa-solid fa-splotch w-5 text-center"></i> Skills Library
-		</button>
-		<button
-			class="w-full flex items-center gap-3 p-3 rounded-xl cursor-pointer transition-colors font-bold text-sm
-            {$currentView === 'codeReview'
-				? 'bg-blue-50 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400'
-				: 'bg-transparent hover:bg-gray-100 dark:hover:bg-gray-800'}"
-			on:click={() => ($currentView = 'codeReview')}
-		>
-			<i class="fas fa-code-pull-request w-5 text-center"></i> Code Review
-		</button>
+		{#each navItems as item}
+			<button
+				class="w-full flex items-center gap-3 p-3 rounded-xl cursor-pointer transition-colors font-bold text-sm
+                {$currentView === item.id
+					? 'bg-blue-50 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400'
+					: 'bg-transparent hover:bg-gray-100 dark:hover:bg-gray-800'}"
+				on:click={() => ($currentView = item.id)}
+			>
+				<i class="{item.icon} w-5 text-center"></i> {item.label}
+			</button>
+		{/each}
 	</div>
 
 	<!-- Extra Space for Views specific settings, but we keep it global mostly or inject it. 
