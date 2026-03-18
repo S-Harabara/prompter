@@ -23,14 +23,16 @@
     import { savedSkills, selectedSkillsForPrompt } from '../../skillsStore.js';
     import tippy from 'tippy.js';
 
-    /** @param {any[]} nodes @param {number} depth */
     function getProjectStructure() {
         let res = 'PROJECT STRUCTURE:\n';
-        /** @param {any[]} nArr @param {number} d */
+        /** 
+         * @param {any[]} nArr 
+         * @param {number} d 
+         */
         const buildStr = (nArr, d) => {
             nArr
                 .sort((a, b) => (a.kind === 'directory' ? -1 : 1))
-                .forEach((n) => {
+                .forEach((/** @type {any} */ n) => {
                     const icon = n.kind === 'directory' ? '📁 ' : '📄 ';
                     res += '  '.repeat(d) + icon + n.name + '\n';
                     if (n.kind === 'directory' && n.children) buildStr(n.children, d + 1);
@@ -56,16 +58,17 @@
         try {
             let res = '';
 
+            if ($includeGoal) res += `GOAL:\n${$goalText}\n\n`;
+
             // Inject Skills
-            const selectedSkills = $savedSkills.filter((s) => $selectedSkillsForPrompt.includes(s.id));
+            const selectedSkills = $savedSkills.filter((/** @type {any} */ s) => $selectedSkillsForPrompt.includes(s.id));
             if (selectedSkills.length > 0) {
                 res += `SKILLS INSTRUCTIONS:\n`;
-                selectedSkills.forEach((skill) => {
+                selectedSkills.forEach((/** @type {any} */ skill) => {
                     res += `--- SKILL: ${skill.name} ---\n${skill.content}\n\n`;
                 });
             }
 
-            if ($includeGoal) res += `GOAL:\n${$goalText}\n\n`;
             if ($includeStructure) res += getProjectStructure();
 
             res += `GIT DIFF (${$sourceBranch} -> ${$targetBranch}):\n`;

@@ -14,15 +14,22 @@
 		fileHandles
 	} from '../../promptStore.js';
 
+	/** 
+	 * Generates a string representation of the project structure.
+	 */
 	function getProjectStructure() {
 		let res = 'PROJECT STRUCTURE:\n';
-		const buildStr = (nodes, depth) => {
-			nodes
+		/** 
+		 * @param {any[]} nodesArr 
+		 * @param {number} d 
+		 */
+		const buildStr = (nodesArr, d) => {
+			nodesArr
 				.sort((a, b) => (a.kind === 'directory' ? -1 : 1))
 				.forEach((n) => {
 					const icon = n.kind === 'directory' ? '📁 ' : '📄 ';
-					res += '  '.repeat(depth) + icon + n.name + '\n';
-					if (n.kind === 'directory' && n.children) buildStr(n.children, depth + 1);
+					res += '  '.repeat(d) + icon + n.name + '\n';
+					if (n.kind === 'directory' && n.children) buildStr(n.children, d + 1);
 				});
 		};
 		buildStr($fileTreeData, 0);
@@ -53,6 +60,7 @@
 			.join('\n');
 	};
 
+	/** @param {string} s */
 	const minifyHTML = (s) => {
 		if (!s) return s;
 		return s
@@ -105,16 +113,17 @@
 		try {
 			let res = '';
 
+			if ($includeGoal) res += `GOAL:\n${$goalText}\n\n`;
+
 			// Inject Skills
-			const selectedSkills = $savedSkills.filter((s) => $selectedSkillsForPrompt.includes(s.id));
+			const selectedSkills = $savedSkills.filter((/** @type {any} */ s) => $selectedSkillsForPrompt.includes(s.id));
 			if (selectedSkills.length > 0) {
 				res += `SKILLS INSTRUCTIONS:\n`;
-				selectedSkills.forEach((skill) => {
+				selectedSkills.forEach((/** @type {any} */ skill) => {
 					res += `--- SKILL: ${skill.name} ---\n${skill.content}\n\n`;
 				});
 			}
 
-			if ($includeGoal) res += `GOAL:\n${$goalText}\n\n`;
 			if ($includeStructure) res += getProjectStructure();
 
 			const paths = Array.from($selectedFiles);
