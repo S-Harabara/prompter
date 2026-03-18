@@ -1,14 +1,17 @@
-<script>
+<script lang="ts">
 	import { removeComments, minifyOutput } from '../../promptStore.js';
 	import { slide } from 'svelte/transition';
-	import { createEventDispatcher } from 'svelte';
 
-	const dispatch = createEventDispatcher();
+	interface Props {
+		onchange?: () => void;
+	}
 
-	let isExpanded = false;
+	let { onchange }: Props = $props();
+
+	let isExpanded = $state(false);
 
 	function onChange() {
-		dispatch('change');
+		onchange?.();
 	}
 </script>
 

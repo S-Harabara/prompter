@@ -21,6 +21,7 @@
     import TransformationPanel from '../PromptBuilder/TransformationPanel.svelte';
     import SkillsSelector from '../PromptBuilder/SkillsSelector.svelte';
     import { savedSkills, selectedSkillsForPrompt } from '../../skillsStore.js';
+    import Button from '../Common/Button.svelte';
     import tippy from 'tippy.js';
 
     function getProjectStructure() {
@@ -86,13 +87,14 @@
         }
     }
 
+    /** @param {any} e */
     function copyToClipboard(e) {
         navigator.clipboard.writeText($generatedOutput);
-        tippy(e.currentTarget, {
+        /** @type {any} */(tippy)(e.currentTarget, {
             content: 'Copied!',
             showOnCreate: true,
             theme: 'onyx',
-            onHidden: (instance) => instance.destroy()
+            onHidden: (/** @type {any} */ instance) => instance.destroy()
         });
     }
 
@@ -109,7 +111,7 @@
     <div class="bg-white dark:bg-dark-card rounded-2xl border dark:border-dark-border p-4 shadow-sm flex flex-col gap-4 overflow-hidden h-full">
         <div class="flex items-center justify-between pb-2 border-b dark:border-dark-border shrink-0">
             <h2 class="font-bold flex items-center gap-2 text-sm tracking-tight">
-                <i class="fas fa-microscope text-purple-500"></i> Review Generation
+                <i class="fas fa-microscope text-blue-500"></i> Review Generation
             </h2>
         </div>
 
@@ -133,9 +135,9 @@
             {/if}
             
             <div class="w-full mt-3.5">
-                <TransformationPanel on:change={generatePrompt} />
+                <TransformationPanel onchange={generatePrompt} />
                 <div class="mt-2 text-left w-full">
-                    <SkillsSelector on:change={generatePrompt} />
+                    <SkillsSelector onchange={generatePrompt} />
                 </div>
             </div>
         </div>
@@ -144,8 +146,8 @@
             {#if $isGenerating}
                 <div class="absolute inset-0 bg-white/50 dark:bg-dark-bg/50 backdrop-blur-sm z-50 flex items-center justify-center rounded-xl">
                     <div class="flex flex-col items-center gap-3">
-                        <div class="w-8 h-8 border-3 border-purple-500 border-t-transparent rounded-full animate-spin"></div>
-                        <span class="text-xs font-bold text-purple-600">Generating Diff...</span>
+                        <div class="w-8 h-8 border-3 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+                        <span class="text-xs font-bold text-blue-600">Generating Diff...</span>
                     </div>
                 </div>
             {/if}
@@ -158,27 +160,30 @@
         </div>
 
         <div class="flex items-center justify-between gap-4 pt-1 shrink-0">
-            <button
-                on:click={generatePrompt}
-                class="grow bg-purple-600 hover:bg-purple-700 text-white font-black py-3 px-8 rounded-xl shadow-lg shadow-purple-500/20 transform transition-all active:scale-95 flex items-center justify-center gap-3 text-xs tracking-wider"
-                disabled={$isGenerating || !$isGeneratingDiff && (!$isSourceLocal || !$isTargetLocal)}
-            >
-                <i class="fas fa-wand-magic-sparkles"></i> GENERATE REVIEW PROMPT
-            </button>
+            <Button
+                onclick={generatePrompt}
+                variant="primary"
+                class="grow"
+                icon="fas fa-wand-magic-sparkles"
+                label="GENERATE REVIEW PROMPT"
+                loading={$isGenerating}
+                disabled={!$isGeneratingDiff && (!$isSourceLocal || !$isTargetLocal)}
+            />
             <div class="flex gap-2">
-                <button
-                    on:click={(e) => copyToClipboard(e)}
-                    class="flex items-center gap-2 px-4 py-3 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-xl text-xs font-bold transition-all"
-                >
-                    <i class="fas fa-copy text-purple-500"></i> COPY
-                </button>
-                <button
-                    on:click={downloadFile}
-                    class="flex items-center gap-2 px-4 py-3 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-xl text-xs font-bold transition-all"
+                <Button
+                    onclick={(e) => copyToClipboard(e)}
+                    variant="secondary"
+                    icon="fas fa-copy"
+                    iconClass="text-blue-500"
+                    label="COPY"
+                />
+                <Button
+                    onclick={downloadFile}
+                    variant="secondary"
+                    icon="fas fa-download"
+                    iconClass="text-indigo-500"
                     title="Download Review Prompt"
-                >
-                    <i class="fas fa-download text-indigo-500"></i>
-                </button>
+                />
             </div>
         </div>
     </div>

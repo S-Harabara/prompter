@@ -51,10 +51,10 @@
         <!-- svelte-ignore a11y_no_static_element_interactions -->
         <div 
             on:mousedown={startResizing}
-            class="w-1.5 hover:w-2 group cursor-col-resize flex items-center justify-center transition-all bg-transparent hover:bg-purple-500/30 shrink-0 z-10"
-            class:bg-purple-500={isResizing}
+            class="w-1.5 hover:w-2 group cursor-col-resize flex items-center justify-center transition-all bg-transparent hover:bg-blue-500/30 shrink-0 z-10"
+            class:bg-blue-500={isResizing}
         >
-            <div class="w-px h-8 bg-gray-300 dark:bg-gray-700 group-hover:bg-purple-500 transition-colors"></div>
+            <div class="w-px h-8 bg-gray-300 dark:bg-gray-700 group-hover:bg-blue-500 transition-colors"></div>
         </div>
 
         <div class="grow relative overflow-hidden">

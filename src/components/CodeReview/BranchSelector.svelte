@@ -13,6 +13,7 @@
 	import { rootPath, folderName as globalFolderName } from '../../promptStore.js';
 	import { getGitBranches, selectProjectFolder, checkBranchLocal, fetchBranch } from '../../utils/gitUtils.js';
 	import SearchableSelect from '../Common/SearchableSelect.svelte';
+	import Button from '../Common/Button.svelte';
 
 	async function handleSelectFolder() {
 		const result = await selectProjectFolder();
@@ -41,6 +42,10 @@
 		}
 	}
 
+	/** 
+	 * @param {string} branch 
+	 * @param {'source' | 'target'} type 
+	 */
 	async function handleFetch(branch, type) {
 		if (!$codeReviewProjectPath) return;
 		fetchingBranch.set(branch);
@@ -87,11 +92,14 @@
 	<div class="bg-white dark:bg-dark-card rounded-2xl border dark:border-dark-border p-4 shadow-sm flex flex-col gap-4">
 		<div class="flex items-center justify-between border-b dark:border-dark-border pb-3">
 			<h2 class="font-bold flex items-center gap-2 text-sm">
-				<i class="fas fa-code-branch text-purple-500"></i> Git Branches
+				<i class="fas fa-code-branch text-blue-500"></i> Git Branches
 			</h2>
-			<button on:click={handleSelectFolder} class="text-[10px] font-bold text-blue-500 hover:text-blue-600 uppercase tracking-wider">
-				{$codeReviewProjectName ? 'Change Project' : 'Select Project'}
-			</button>
+			<Button 
+				onclick={handleSelectFolder} 
+				variant="ghost" 
+				class="p-0! h-auto! text-[10px] text-blue-500 hover:text-blue-600 uppercase tracking-wider"
+				label={$codeReviewProjectName ? 'Change Project' : 'Select Project'}
+			/>
 		</div>
 
 		{#if $codeReviewProjectName}
@@ -104,7 +112,7 @@
 				<div class="grid grid-cols-1 gap-4">
 					<div class="space-y-2">
 						<div class="flex items-center justify-between px-1">
-							<label id="source-label" class="text-[10px] uppercase font-bold text-gray-400 block">Source Branch</label>
+							<div class="text-[10px] uppercase font-bold text-gray-400 block">Source Branch</div>
 							{#if $sourceBranch}
 								<span class="text-[9px] font-bold {$isSourceLocal ? 'text-emerald-500' : 'text-amber-500'} uppercase">
 									{$isSourceLocal ? 'Local' : 'Remote'}
@@ -113,17 +121,14 @@
 						</div>
 						<SearchableSelect bind:value={$sourceBranch} options={$branchesList} placeholder="Select source..." />
 						{#if $sourceBranch && !$isSourceLocal}
-							<button
-								on:click={() => handleFetch($sourceBranch, 'source')}
-								disabled={$fetchingBranch === $sourceBranch}
-								class="w-full py-1.5 bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400 rounded-lg text-[10px] font-bold border border-amber-200 dark:border-amber-900/50 hover:bg-amber-100 transition-all flex items-center justify-center gap-2"
-							>
-								{#if $fetchingBranch === $sourceBranch}
-									<i class="fas fa-spinner fa-spin"></i> FETCHING...
-								{:else}
-									<i class="fas fa-download"></i> FETCH TO LOCAL
-								{/if}
-							</button>
+							<Button
+								onclick={() => handleFetch($sourceBranch, 'source')}
+								variant="warning"
+								class="w-full py-1.5"
+								loading={$fetchingBranch === $sourceBranch}
+								icon="fas fa-download"
+								label="FETCH TO LOCAL"
+							/>
 						{/if}
 					</div>
 
@@ -133,7 +138,7 @@
 
 					<div class="space-y-2">
 						<div class="flex items-center justify-between px-1">
-							<label id="target-label" class="text-[10px] uppercase font-bold text-gray-400 block">Target Branch</label>
+							<div class="text-[10px] uppercase font-bold text-gray-400 block">Target Branch</div>
 							{#if $targetBranch}
 								<span class="text-[9px] font-bold {$isTargetLocal ? 'text-emerald-500' : 'text-amber-500'} uppercase">
 									{$isTargetLocal ? 'Local' : 'Remote'}
@@ -142,32 +147,31 @@
 						</div>
 						<SearchableSelect bind:value={$targetBranch} options={$branchesList} placeholder="Select target..." />
 						{#if $targetBranch && !$isTargetLocal}
-							<button
-								on:click={() => handleFetch($targetBranch, 'target')}
-								disabled={$fetchingBranch === $targetBranch}
-								class="w-full py-1.5 bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400 rounded-lg text-[10px] font-bold border border-amber-200 dark:border-amber-900/50 hover:bg-amber-100 transition-all flex items-center justify-center gap-2"
-							>
-								{#if $fetchingBranch === $targetBranch}
-									<i class="fas fa-spinner fa-spin"></i> FETCHING...
-								{:else}
-									<i class="fas fa-download"></i> FETCH TO LOCAL
-								{/if}
-							</button>
+							<Button
+								onclick={() => handleFetch($targetBranch, 'target')}
+								variant="warning"
+								class="w-full py-1.5"
+								loading={$fetchingBranch === $targetBranch}
+								icon="fas fa-download"
+								label="FETCH TO LOCAL"
+							/>
 						{/if}
 					</div>
 				</div>
 
-				<button
-					on:click={refreshBranches}
-					class="w-full py-2 border border-dashed border-gray-300 dark:border-gray-700 rounded-xl text-[10px] font-bold text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-800 transition-all uppercase"
-				>
-					<i class="fas fa-sync-alt mr-1.5"></i> Refresh Branches
-				</button>
+				<Button
+					onclick={refreshBranches}
+					variant="ghost"
+					class="w-full py-2 border border-dashed border-gray-300 dark:border-gray-700 text-[10px]! uppercase"
+					icon="fas fa-sync-alt"
+					label="Refresh Branches"
+				/>
 			</div>
 		{:else}
-			<div
+			<button
+				type="button"
 				on:click={handleSelectFolder}
-				class="grow min-h-[200px] border-2 border-dashed border-gray-200 dark:border-dark-border rounded-xl flex flex-col items-center justify-center p-6 text-center gap-3 cursor-pointer hover:bg-blue-50 dark:hover:bg-blue-900/10 transition-all group"
+				class="grow min-h-[200px] border-2 border-dashed border-gray-200 dark:border-dark-border rounded-xl flex flex-col items-center justify-center p-6 text-center gap-3 cursor-pointer hover:bg-blue-50 dark:hover:bg-blue-900/10 transition-all group w-full"
 			>
 				<div
 					class="w-12 h-12 bg-blue-50 dark:bg-blue-900/20 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform"
@@ -178,7 +182,7 @@
 					<div class="text-sm font-bold text-gray-500 dark:text-gray-400">No project selected</div>
 					<div class="text-[10px] text-gray-400 dark:text-gray-500 mt-1">Select a git repository to compare branches</div>
 				</div>
-			</div>
+			</button>
 		{/if}
 	</div>
 </div>

@@ -41,7 +41,7 @@
 			<!-- Model limits -->
 			<div>
 				<div class="text-[9px] font-black uppercase tracking-widest text-gray-400 mb-3 flex items-center gap-1.5">
-					<i class="fas fa-microchip text-indigo-400"></i> Gemini 3 family (latest)
+					<i class="fas fa-microchip text-blue-400"></i> Gemini 3 family (latest)
 				</div>
 				<div class="flex flex-col gap-4">
 					<!-- Gemini 3 Pro -->

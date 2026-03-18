@@ -27,7 +27,7 @@
 			<i class="fas fa-microchip"></i>
 		</div>
 		<h1
-			class="font-black tracking-tight text-lg bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-blue-400 dark:to-indigo-400"
+			class="font-black tracking-tight text-lg bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-blue-400 dark:from-blue-400 dark:to-blue-300"
 		>
 			SourceFlow
 		</h1>

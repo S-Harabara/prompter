@@ -1,34 +1,38 @@
-<script>
+<script lang="ts">
     import { fade, scale } from 'svelte/transition';
     import { savedSkills, selectedSkillsForPrompt, togglePromptSelection, favoriteSkillIds } from '../../skillsStore.js';
-    import { createEventDispatcher } from 'svelte';
+    
+    interface Props {
+        onchange?: () => void;
+    }
 
-    const dispatch = createEventDispatcher();
+    let { onchange }: Props = $props();
 
-    let open = false;
-    let searchQuery = '';
+    let open = $state(false);
+    let searchQuery = $state('');
 
-    $: sortedSkills = [...$savedSkills].sort((a, b) => {
+    const sortedSkills = $derived([...$savedSkills].sort((a, b) => {
         // Favorites first, then alphabetically
         const aFav = $favoriteSkillIds.includes(a.id);
         const bFav = $favoriteSkillIds.includes(b.id);
         if (aFav && !bFav) return -1;
         if (!aFav && bFav) return 1;
         return a.name.localeCompare(b.name);
-    });
+    }));
 
-    $: filtered = searchQuery.trim()
+    const filtered = $derived(searchQuery.trim()
         ? sortedSkills.filter(s =>
             s.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
             s.description?.toLowerCase().includes(searchQuery.toLowerCase())
           )
-        : sortedSkills;
+        : sortedSkills);
 
-    $: selectedCount = $selectedSkillsForPrompt.length;
+    const selectedCount = $derived($selectedSkillsForPrompt.length);
 
-    function toggle(id) {
+    /** @param {string} id */
+    function toggle(id: string) {
         togglePromptSelection(id);
-        dispatch('change');
+        onchange?.();
     }
 
     function closePopup() {
@@ -42,12 +46,12 @@
                 togglePromptSelection(s.id);
             }
         });
-        dispatch('change');
+        onchange?.();
     }
 
     function clearAll() {
-        $selectedSkillsForPrompt.forEach(id => togglePromptSelection(id));
-        dispatch('change');
+        $selectedSkillsForPrompt.forEach((id: string) => togglePromptSelection(id));
+        onchange?.();
     }
 </script>
 
@@ -57,10 +61,10 @@
     class="flex items-center justify-between w-full px-3 py-2 bg-gray-50 dark:bg-gray-800 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-all border dark:border-dark-border"
 >
     <div class="flex items-center gap-2">
-        <i class="fas fa-book-sparkles text-indigo-500 text-xs"></i>
+        <i class="fas fa-book-sparkles text-blue-500 text-xs"></i>
         <span class="text-[11px] font-bold uppercase tracking-wider">Skills</span>
         {#if selectedCount > 0}
-            <span class="ml-0.5 text-[9px] font-black bg-indigo-600 text-white rounded-full px-1.5 py-0.5 leading-none">{selectedCount}</span>
+            <span class="ml-0.5 text-[9px] font-black bg-blue-600 text-white rounded-full px-1.5 py-0.5 leading-none">{selectedCount}</span>
         {/if}
     </div>
     <i class="fas fa-sliders text-[10px] text-gray-400"></i>
@@ -84,7 +88,7 @@
             <!-- Header -->
             <div class="px-5 py-4 border-b dark:border-dark-border flex items-center justify-between shrink-0">
                 <div class="flex items-center gap-3">
-                    <div class="w-8 h-8 rounded-lg bg-indigo-50 dark:bg-indigo-900/30 flex items-center justify-center text-indigo-500">
+                    <div class="w-8 h-8 rounded-lg bg-blue-50 dark:bg-blue-900/30 flex items-center justify-center text-blue-500">
                         <i class="fas fa-book-sparkles text-sm"></i>
                     </div>
                     <div>
@@ -94,7 +98,7 @@
                         </p>
                     </div>
                 </div>
-                <button on:click={closePopup} class="w-8 h-8 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors flex items-center justify-center text-gray-400">
+                <button on:click={closePopup} class="w-8 h-8 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors flex items-center justify-center text-gray-400" aria-label="Close">
                     <i class="fas fa-times text-sm"></i>
                 </button>
             </div>
@@ -108,7 +112,7 @@
                         bind:value={searchQuery}
                         placeholder="Search skills..."
                         autofocus
-                        class="w-full bg-gray-50 dark:bg-gray-800 border dark:border-dark-border rounded-lg pl-8 pr-3 py-2 text-xs outline-none focus:ring-2 focus:ring-indigo-500 transition-all"
+                        class="w-full bg-gray-50 dark:bg-gray-800 border dark:border-dark-border rounded-lg pl-8 pr-3 py-2 text-xs outline-none focus:ring-2 focus:ring-blue-500 transition-all"
                     >
                 </div>
             </div>
@@ -116,7 +120,7 @@
             <!-- Quick actions -->
             {#if $savedSkills.length > 0}
                 <div class="px-4 py-2 flex items-center gap-2 border-b dark:border-dark-border shrink-0">
-                    <button on:click={selectAll} class="text-[10px] font-bold text-indigo-600 dark:text-indigo-400 hover:underline">Select all visible</button>
+                    <button on:click={selectAll} class="text-[10px] font-bold text-blue-600 dark:text-blue-400 hover:underline">Select all visible</button>
                     <span class="text-gray-300 dark:text-gray-700">·</span>
                     <button on:click={clearAll} class="text-[10px] font-bold text-gray-400 hover:text-red-500 transition-colors hover:underline">Clear all</button>
                 </div>
@@ -147,12 +151,12 @@
                             on:keydown={(e) => e.key === ' ' && toggle(skill.id)}
                             class="flex items-center gap-3 px-3 py-2.5 rounded-xl cursor-pointer transition-all border
                                 {isSelected
-                                    ? 'bg-indigo-50 dark:bg-indigo-900/20 border-indigo-200 dark:border-indigo-800/50'
+                                    ? 'bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800/50'
                                     : 'bg-gray-50/60 dark:bg-gray-800/40 border-transparent hover:bg-gray-100 dark:hover:bg-gray-800'}"
                         >
                             <!-- Checkbox -->
                             <div class="shrink-0 w-4 h-4 rounded border-2 flex items-center justify-center transition-all
-                                {isSelected ? 'bg-indigo-600 border-indigo-600' : 'border-gray-300 dark:border-gray-600'}">
+                                {isSelected ? 'bg-blue-600 border-blue-600' : 'border-gray-300 dark:border-gray-600'}">
                                 {#if isSelected}
                                     <i class="fas fa-check text-white" style="font-size: 8px;"></i>
                                 {/if}
@@ -191,7 +195,7 @@
                 </span>
                 <button
                     on:click={closePopup}
-                    class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-lg transition-colors">
+                    class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-lg transition-colors">
                     Done
                 </button>
             </div>

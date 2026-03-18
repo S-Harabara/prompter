@@ -3,19 +3,20 @@
 	import { previewSize, previewTokens } from '../../promptStore.js';
 	import { selectFolder } from '../../utils/folderPicker.js';
 	import TokenPill from '../PromptBuilder/TokenPill.svelte';
+	import Button from '../Common/Button.svelte';
 </script>
 
 <nav
 	class="h-14 border-b dark:border-dark-border bg-white dark:bg-dark-card flex items-center justify-between px-4 z-50 shrink-0 select-none"
 >
 	<div class="flex items-center gap-4">
-		<button
-			on:click={selectFolder}
-			class="flex items-center gap-2 px-3 py-1.5 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors text-xs font-bold shadow-sm"
-		>
-			<i class="fas fa-folder-open"></i>
-			<span>{$codeReviewProjectName ? 'CHANGE PROJECT' : 'SELECT PROJECT'}</span>
-		</button>
+		<Button
+			onclick={selectFolder}
+			variant="primary"
+			class="py-1.5! px-3! font-bold text-xs"
+			icon="fas fa-folder-open"
+			label={$codeReviewProjectName ? 'CHANGE PROJECT' : 'SELECT PROJECT'}
+		/>
 
 		{#if $codeReviewProjectName}
 			<div class="h-6 w-px bg-gray-200 dark:bg-dark-border mx-2"></div>

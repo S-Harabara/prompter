@@ -101,6 +101,7 @@
 	import SkillsSelector from './SkillsSelector.svelte';
 	import TransformationPanel from './TransformationPanel.svelte';
 	import TokenPill from './TokenPill.svelte';
+	import Button from '../Common/Button.svelte';
 	import { savedSkills, selectedSkillsForPrompt } from '../../skillsStore.js';
 
 	async function generatePrompt() {
@@ -155,13 +156,14 @@
 		}
 	}
 
+	/** @param {any} e */
 	function copyToClipboard(e) {
 		navigator.clipboard.writeText($generatedOutput);
-		tippy(e.currentTarget, {
+		/** @type {any} */(tippy)(e.currentTarget, {
 			content: 'Copied!',
 			showOnCreate: true,
 			theme: 'onyx',
-			onHidden: (instance) => instance.destroy()
+			onHidden: (/** @type {any} */ instance) => instance.destroy()
 		});
 	}
 
@@ -180,14 +182,14 @@
 	>
 		<div class="flex items-center justify-between pb-2 border-b dark:border-dark-border shrink-0">
 			<h2 class="font-bold flex items-center gap-2">
-				<i class="fas fa-terminal text-emerald-500"></i> Generation
+				<i class="fas fa-terminal text-blue-500"></i> Generation
 			</h2>
 
 			<div class="flex items-center gap-3">
 				<!-- Size pill -->
 				<div class="flex items-center gap-1.5 text-[10px] font-bold uppercase text-gray-400">
 					<span>Size:</span>
-					<span class="text-emerald-500 font-mono">{($previewSize / 1024).toFixed(1)} KB</span>
+					<span class="text-blue-500 font-mono">{($previewSize / 1024).toFixed(1)} KB</span>
 				</div>
 
 				<TokenPill tokens={$previewTokens} label="tokens" />
@@ -215,10 +217,10 @@
 				{/if}
 			</div>
 			<div class="w-full mt-3.5">
-				<TransformationPanel on:change={generatePrompt} />
+				<TransformationPanel onchange={generatePrompt} />
 
 				<div class="mt-2 text-left w-full">
-					<SkillsSelector on:change={generatePrompt} />
+					<SkillsSelector onchange={generatePrompt} />
 				</div>
 			</div>
 		</div>
@@ -241,25 +243,29 @@
 		</div>
 
 		<div class="flex items-center justify-between gap-4 pt-1 shrink-0">
-			<button
-				on:click={generatePrompt}
-				class="flex-grow bg-blue-600 hover:bg-blue-700 text-white font-black py-3 px-8 rounded-xl shadow-lg shadow-blue-500/20 transform transition-all active:scale-95 flex items-center justify-center gap-3 text-sm"
-			>
-				<i class="fas fa-bolt"></i> GENERATE PROMPT
-			</button>
+			<Button
+				onclick={generatePrompt}
+				variant="primary"
+				class="grow"
+				icon="fas fa-bolt"
+				label="GENERATE PROMPT"
+				loading={$isGenerating}
+			/>
 			<div class="flex gap-2">
-				<button
-					on:click={(e) => copyToClipboard(e)}
-					class="flex items-center gap-2 px-4 py-3 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-xl text-xs font-bold transition-all"
-				>
-					<i class="fas fa-copy text-blue-500"></i> COPY
-				</button>
-				<button
-					on:click={downloadFile}
-					class="flex items-center gap-2 px-4 py-3 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-xl text-xs font-bold transition-all"
-				>
-					<i class="fas fa-download text-indigo-500"></i> DOWNLOAD
-				</button>
+				<Button
+					onclick={(e) => copyToClipboard(e)}
+					variant="secondary"
+					icon="fas fa-copy"
+					iconClass="text-blue-500"
+					label="COPY"
+				/>
+				<Button
+					onclick={downloadFile}
+					variant="secondary"
+					icon="fas fa-download"
+					iconClass="text-indigo-500"
+					label="DOWNLOAD"
+				/>
 			</div>
 		</div>
 	</div>

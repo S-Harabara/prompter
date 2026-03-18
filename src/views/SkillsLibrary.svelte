@@ -2,6 +2,7 @@
     import { savedSkills, favoriteSkillIds, addSkill, removeSkill, toggleFavorite, updateSkill } from '../skillsStore.js';
     import { fetchSkillFromUrl, parseSkillFile } from '../utils/skillsFetcher.js';
     import { fade, slide } from 'svelte/transition';
+    import Button from '../components/Common/Button.svelte';
 
     let urlInput = '';
     let isFetching = false;
@@ -9,20 +10,21 @@
     let activeTab = 'library'; // 'library' | 'create'
     let isDragging = false;
 
-    // Skill Preview/Edit Modal State
+    // Create My Skill form
+    let createTitle = '';
+    let createDescription = '';
+    let createSaveError = '';
+
+    /** @type {any} */
     let selectedSkill = null;
     let isEditMode = false;
     let editName = '';
     let editDescription = '';
     let editContent = '';
 
-    // Create My Skill form
-    let createTitle = '';
-    let createDescription = '';
-    let createSaveError = '';
-
+    /** @param {string} [targetUrl] */
     async function handleAddUrl(targetUrl = urlInput) {
-        if (!targetUrl.trim()) return;
+        if (!targetUrl?.trim()) return;
 
         isFetching = true;
         fetchError = '';
@@ -31,7 +33,7 @@
             addSkill(skill);
             urlInput = '';
             activeTab = 'library';
-        } catch (e) {
+        } catch (/** @type {any} */ e) {
             fetchError = e.message;
         } finally {
             isFetching = false;
@@ -39,6 +41,7 @@
     }
 
     // ---- Skill Modal ----
+    /** @param {any} skill */
     function openSkillModal(skill) {
         selectedSkill = skill;
         isEditMode = false;
@@ -53,6 +56,7 @@
     }
 
     function enterEditMode() {
+        if (!selectedSkill) return;
         isEditMode = true;
         editName = selectedSkill.name;
         editDescription = selectedSkill.description;
@@ -60,6 +64,7 @@
     }
 
     function saveSkillEdits() {
+        if (!selectedSkill) return;
         updateSkill(selectedSkill.id, {
             name: editName.trim() || selectedSkill.name,
             description: editDescription.trim(),
@@ -95,21 +100,27 @@
     }
 
     // ---- Drag and Drop ----
+    /** @param {DragEvent} e */
     function handleDragEnter(e) { e.preventDefault(); isDragging = true; }
+    /** @param {DragEvent} e */
     function handleDragLeave(e) { e.preventDefault(); isDragging = false; }
+    /** @param {DragEvent} e */
     function handleDragOver(e) { e.preventDefault(); isDragging = true; }
+    /** @param {DragEvent} e */
     function handleDrop(e) {
         e.preventDefault();
         isDragging = false;
         fetchError = '';
 
-        const files = e.dataTransfer.files;
-        if (files.length > 0) {
+        const files = e.dataTransfer?.files;
+        if (files && files.length > 0) {
             Array.from(files).forEach(file => {
                 if (file.name.endsWith('.md')) {
                     const reader = new FileReader();
                     reader.onload = (event) => {
-                        const content = event.target.result;
+                        const content = event.target?.result;
+                        if (typeof content !== 'string') return;
+                        /** @type {any} */
                         const skill = parseSkillFile(content);
                         skill.sourceUrl = 'local://' + file.name;
                         skill.isLocal = true;
@@ -128,11 +139,14 @@
     }
 </script>
 
-<div class="flex-grow flex flex-col p-6 h-full overflow-hidden bg-gray-50 dark:bg-dark-bg transition-colors"
+<div class="flex-grow flex flex-col p-6 h-full overflow-hidden bg-gray-50 dark:bg-dark-bg transition-colors relative"
     on:dragenter={handleDragEnter}
     on:dragleave={handleDragLeave}
     on:dragover={handleDragOver}
-    on:drop={handleDrop}>
+    on:drop={handleDrop}
+    role="region"
+    aria-label="Skills library with drag and drop support"
+>
 
     <!-- Drag overlay -->
     {#if isDragging}
@@ -157,21 +171,21 @@
         </div>
 
         <!-- skills.sh Callout Banner -->
-        <div class="bg-gradient-to-r from-indigo-50 to-blue-50 dark:from-indigo-900/20 dark:to-blue-900/20 border border-indigo-100 dark:border-indigo-800/30 rounded-2xl p-4 flex items-start gap-4 shrink-0">
-            <div class="w-10 h-10 rounded-xl bg-indigo-100 dark:bg-indigo-900/40 flex items-center justify-center text-indigo-600 dark:text-indigo-400 shrink-0 mt-0.5">
+        <div class="bg-gradient-to-r from-blue-50 to-blue-100/50 dark:from-blue-900/20 dark:to-blue-900/10 border border-blue-100 dark:border-blue-800/30 rounded-2xl p-4 flex items-start gap-4 shrink-0">
+            <div class="w-10 h-10 rounded-xl bg-blue-100 dark:bg-blue-900/40 flex items-center justify-center text-blue-600 dark:text-blue-400 shrink-0 mt-0.5">
                 <i class="fas fa-compass text-lg"></i>
             </div>
             <div class="flex-grow">
-                <h3 class="font-bold text-sm text-indigo-700 dark:text-indigo-300">Discover Skills at skills.sh</h3>
-                <p class="text-xs text-indigo-600/80 dark:text-indigo-400/80 mt-1 leading-relaxed">
+                <h3 class="font-bold text-sm text-blue-700 dark:text-blue-300">Discover Skills at skills.sh</h3>
+                <p class="text-xs text-blue-600/80 dark:text-blue-400/80 mt-1 leading-relaxed">
                     Browse thousands of community-built skills at
                     <a href="https://skills.sh/" target="_blank" rel="noreferrer"
-                        class="underline font-bold hover:text-indigo-800 dark:hover:text-indigo-200 transition-colors">skills.sh</a>.
+                        class="underline font-bold hover:text-blue-800 dark:hover:text-blue-200 transition-colors">skills.sh</a>.
                     Find one you like, copy its GitHub URL, and paste it below to add it to your library instantly.
                 </p>
             </div>
             <a href="https://skills.sh/" target="_blank" rel="noreferrer"
-                class="shrink-0 text-[10px] font-bold uppercase tracking-wider px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition-colors flex items-center gap-1.5">
+                class="shrink-0 text-[10px] font-bold uppercase tracking-wider px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors flex items-center gap-1.5 shadow-sm">
                 <i class="fas fa-arrow-up-right-from-square"></i> Visit
             </a>
         </div>
@@ -192,16 +206,15 @@
                         class="w-full bg-gray-50 dark:bg-gray-800/50 border dark:border-dark-border rounded-xl py-3 pl-10 pr-4 text-sm outline-none focus:ring-2 focus:ring-blue-500 transition-all"
                     >
                 </div>
-                <button
-                    on:click={() => handleAddUrl()}
+                <Button
+                    onclick={() => handleAddUrl()}
+                    variant="primary"
                     disabled={isFetching || !urlInput.trim()}
-                    class="bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-white px-6 py-3 rounded-xl font-bold text-sm shadow-lg shadow-blue-500/20 transition-all flex items-center gap-2">
-                    {#if isFetching}
-                        <i class="fas fa-spinner fa-spin"></i> Fetching...
-                    {:else}
-                        <i class="fas fa-plus"></i> Add
-                    {/if}
-                </button>
+                    loading={isFetching}
+                    icon="fas fa-plus"
+                    label="Add"
+                    class="px-6! py-3!"
+                />
             </div>
             {#if fetchError}
                 <div class="text-red-500 text-xs font-bold flex items-center gap-2 mt-1">
@@ -270,7 +283,7 @@
                                             </div>
                                         </div>
                                     </div>
-                                    <div class="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity" on:click|stopPropagation>
+                                    <div class="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                                         <button
                                             class="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
                                             on:click={() => toggleFavorite(skill.id)}
@@ -298,7 +311,7 @@
                 <div class="max-w-2xl mx-auto pt-4">
                     <div class="bg-white dark:bg-dark-card border dark:border-dark-border rounded-2xl p-6 shadow-sm flex flex-col gap-5">
                         <div class="flex items-center gap-3 mb-1">
-                            <div class="w-10 h-10 rounded-xl bg-purple-50 dark:bg-purple-900/20 flex items-center justify-center text-purple-500">
+                            <div class="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center text-blue-500">
                                 <i class="fas fa-pen-nib text-lg"></i>
                             </div>
                             <div>
@@ -315,7 +328,7 @@
                                 type="text"
                                 bind:value={createTitle}
                                 placeholder="e.g. Senior TypeScript Reviewer"
-                                class="bg-gray-50 dark:bg-gray-800/50 border dark:border-dark-border rounded-xl py-3 px-4 text-sm outline-none focus:ring-2 focus:ring-purple-500 transition-all"
+                                class="bg-gray-50 dark:bg-gray-800/50 border dark:border-dark-border rounded-xl py-3 px-4 text-sm outline-none focus:ring-2 focus:ring-blue-500 transition-all font-bold"
                             >
                         </div>
 
@@ -327,7 +340,7 @@
                                 bind:value={createDescription}
                                 placeholder="Describe what this skill should do. This will be included in your generated prompt as a set of instructions for the AI..."
                                 rows="10"
-                                class="bg-gray-50 dark:bg-gray-800/50 border dark:border-dark-border rounded-xl py-3 px-4 text-sm outline-none focus:ring-2 focus:ring-purple-500 transition-all resize-y font-mono leading-relaxed"
+                                class="bg-gray-50 dark:bg-gray-800/50 border dark:border-dark-border rounded-xl py-3 px-4 text-sm outline-none focus:ring-2 focus:ring-blue-500 transition-all resize-y font-mono leading-relaxed"
                             ></textarea>
                         </div>
 
@@ -337,11 +350,13 @@
                             </div>
                         {/if}
 
-                        <button
-                            on:click={handleCreateSkill}
-                            class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3.5 rounded-xl shadow-lg shadow-purple-500/20 transition-all flex items-center justify-center gap-2">
-                            <i class="fas fa-floppy-disk"></i> Save Skill to My Library
-                        </button>
+                        <Button
+                            onclick={handleCreateSkill}
+                            variant="primary"
+                            icon="fas fa-floppy-disk"
+                            label="Save Skill to My Library"
+                            class="w-full py-3.5!"
+                        />
                     </div>
                 </div>
             {/if}
@@ -359,7 +374,7 @@
         <div class="relative bg-white dark:bg-dark-card w-full max-w-2xl rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]" transition:slide={{duration: 300}}>
 
             <!-- Modal Header -->
-            <div class="p-5 border-b dark:border-dark-border flex items-center justify-between bg-gradient-to-r {selectedSkill.isCustom ? 'from-purple-500 to-indigo-600' : 'from-blue-500 to-indigo-600'} text-white shrink-0">
+            <div class="p-5 border-b dark:border-dark-border flex items-center justify-between bg-gradient-to-r from-blue-500 to-blue-700 text-white shrink-0">
                 <div class="flex items-center gap-4">
                     <div class="w-12 h-12 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center text-2xl shadow-inner">
                         <i class="fas {selectedSkill.isCustom ? 'fa-pen-nib' : 'fa-bolt'}"></i>
@@ -388,12 +403,13 @@
                             <i class="fas fa-pencil text-sm"></i>
                         </button>
                     {/if}
-                    <button on:click={closeSkillModal}
-                        class="w-9 h-9 rounded-xl bg-white/10 hover:bg-white/20 transition-colors flex items-center justify-center">
-                        <i class="fas fa-times"></i>
-                    </button>
+                        <button on:click={closeSkillModal}
+                            class="w-9 h-9 rounded-xl bg-white/10 hover:bg-white/20 transition-colors flex items-center justify-center"
+                            aria-label="Close modal">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
                 </div>
-            </div>
 
             <!-- Modal Body -->
             <div class="flex-grow overflow-y-auto p-6 custom-scrollbar flex flex-col gap-5">
@@ -402,24 +418,27 @@
                     <!-- Edit Form -->
                     <div class="flex flex-col gap-4">
                         <div class="flex flex-col gap-1.5">
-                            <label class="text-xs font-bold uppercase tracking-wider text-gray-400">Skill Name</label>
+                            <label class="text-xs font-bold uppercase tracking-wider text-gray-400" for="edit-skill-name">Skill Name</label>
                             <input
+                                id="edit-skill-name"
                                 type="text"
                                 bind:value={editName}
                                 class="bg-gray-50 dark:bg-gray-800/50 border dark:border-dark-border rounded-xl py-2.5 px-4 text-sm outline-none focus:ring-2 focus:ring-blue-500 transition-all font-bold"
                             >
                         </div>
                         <div class="flex flex-col gap-1.5">
-                            <label class="text-xs font-bold uppercase tracking-wider text-gray-400">Description</label>
+                            <label class="text-xs font-bold uppercase tracking-wider text-gray-400" for="edit-skill-desc">Description</label>
                             <input
+                                id="edit-skill-desc"
                                 type="text"
                                 bind:value={editDescription}
                                 class="bg-gray-50 dark:bg-gray-800/50 border dark:border-dark-border rounded-xl py-2.5 px-4 text-sm outline-none focus:ring-2 focus:ring-blue-500 transition-all"
                             >
                         </div>
                         <div class="flex flex-col gap-1.5">
-                            <label class="text-xs font-bold uppercase tracking-wider text-gray-400">Instructions / Content</label>
+                            <label class="text-xs font-bold uppercase tracking-wider text-gray-400" for="edit-skill-content">Instructions / Content</label>
                             <textarea
+                                id="edit-skill-content"
                                 bind:value={editContent}
                                 rows="14"
                                 class="bg-gray-50 dark:bg-gray-800/50 border dark:border-dark-border rounded-xl py-3 px-4 text-sm outline-none focus:ring-2 focus:ring-blue-500 transition-all resize-y font-mono leading-relaxed"
@@ -466,19 +485,25 @@
             <!-- Modal Footer -->
             <div class="p-5 border-t dark:border-dark-border flex gap-3 shrink-0">
                 {#if isEditMode}
-                    <button on:click={saveSkillEdits}
-                        class="flex-grow bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl shadow-lg shadow-blue-500/20 transition-all flex items-center justify-center gap-2">
-                        <i class="fas fa-floppy-disk"></i> Save Changes
-                    </button>
+                    <Button
+                        onclick={saveSkillEdits}
+                        variant="primary"
+                        icon="fas fa-floppy-disk"
+                        label="Save Changes"
+                        class="grow py-3!"
+                    />
                     <button on:click={() => isEditMode = false}
                         class="px-5 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 font-bold rounded-xl transition-all">
                         Cancel
                     </button>
                 {:else}
-                    <button on:click={enterEditMode}
-                        class="flex-grow bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl shadow-lg shadow-blue-500/20 transition-all flex items-center justify-center gap-2">
-                        <i class="fas fa-pencil"></i> Edit Skill
-                    </button>
+                    <Button
+                        onclick={enterEditMode}
+                        variant="primary"
+                        icon="fas fa-pencil"
+                        label="Edit Skill"
+                        class="grow py-3!"
+                    />
                     <button on:click={() => { removeSkill(selectedSkill.id); closeSkillModal(); }}
                         class="px-5 bg-red-50 dark:bg-red-900/20 hover:bg-red-100 dark:hover:bg-red-900/40 text-red-500 font-bold rounded-xl transition-all flex items-center gap-2">
                         <i class="fas fa-trash-alt"></i>

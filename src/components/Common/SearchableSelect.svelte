@@ -1,33 +1,38 @@
-<script>
-    import { createEventDispatcher, onMount } from 'svelte';
+<script lang="ts">
+    import { onMount } from 'svelte';
     
-    /** @type {string} */
-    export let value = "";
-    /** @type {string[]} */
-    export let options = [];
-    /** @type {string} */
-    export let placeholder = "Search...";
-    /** @type {string} */
-    export let label = "";
-    /** @type {boolean} */
-    export let disabled = false;
+    interface Props {
+        value?: string;
+        options?: string[];
+        placeholder?: string;
+        label?: string;
+        disabled?: boolean;
+        onchange?: (val: string) => void;
+    }
 
-    const dispatch = createEventDispatcher();
-    let isOpen = false;
-    let searchTerm = "";
-    /** @type {HTMLDivElement} */
-    let container;
+    let { 
+        value = $bindable(""), 
+        options = [], 
+        placeholder = "Search...", 
+        label = "", 
+        disabled = false,
+        onchange
+    }: Props = $props();
 
-    $: filteredOptions = options.filter(opt => 
+    let isOpen = $state(false);
+    let searchTerm = $state("");
+    let container: HTMLDivElement | undefined = $state();
+
+    const filteredOptions = $derived(options.filter(opt => 
         opt.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    ));
 
     /** @param {string} opt */
-    function selectOption(opt) {
+    function selectOption(opt: string) {
         value = opt;
         isOpen = false;
         searchTerm = "";
-        dispatch('change', opt);
+        onchange?.(opt);
     }
 
     function toggleOpen() {
@@ -39,13 +44,14 @@
     }
 
     /** @param {MouseEvent} event */
-    function handleClickOutside(event) {
-        if (container && !container.contains(/** @type {Node} */(event.target))) {
+    function handleClickOutside(event: MouseEvent) {
+        if (container && !container.contains(event.target as Node)) {
             isOpen = false;
         }
     }
 
-    function handleKeydown(e) {
+    /** @param {KeyboardEvent} e */
+    function handleKeydown(e: KeyboardEvent) {
         if (e.key === 'Enter' || e.key === ' ') {
             toggleOpen();
         } else if (e.key === 'Escape') {
