@@ -1,5 +1,5 @@
 <script>
-	import { fileTreeData, selectedFiles, explorerFilter } from '../../promptStore.js';
+	import { fileTreeData, selectedFiles, explorerFilter, isScanning, scanProgress } from '../../promptStore.js';
 	import FileTreeItem from './FileTreeItem.svelte';
 	import FileFilters from './FileFilters.svelte';
 	import { selectFolder, resetFolder } from '../../utils/folderPicker.js';
@@ -15,9 +15,7 @@
 		selectedFiles.set($selectedFiles);
 	}
 
-	$: filteredTreeData = $explorerFilter
-		? filterTree($fileTreeData, $explorerFilter.toLowerCase())
-		: $fileTreeData;
+	$: filteredTreeData = $explorerFilter ? filterTree($fileTreeData, $explorerFilter.toLowerCase()) : $fileTreeData;
 
 	function filterTree(nodes, query) {
 		return nodes
@@ -80,7 +78,19 @@
 					? 'cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800/50 transition-all border-2 border-dashed border-transparent hover:border-blue-500/30'
 					: ''}"
 			>
-				{#if $fileTreeData.length === 0}
+				{#if $isScanning}
+					<div
+						class="absolute inset-0 flex flex-col items-center justify-center p-8 text-center bg-gray-50/80 dark:bg-gray-800/80 z-20 backdrop-blur-[1px]"
+					>
+						<div class="relative w-16 h-16 mb-4">
+							<div class="absolute inset-0 border-4 border-blue-500/20 rounded-full"></div>
+							<div class="absolute inset-0 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+						</div>
+						<span class="text-sm font-bold text-gray-700 dark:text-gray-200">Scanning Project...</span>
+					</div>
+				{/if}
+
+				{#if $fileTreeData.length === 0 && !$isScanning}
 					<div class="absolute inset-0 flex flex-col items-center justify-center p-8 text-center gap-3">
 						<div class="w-16 h-16 bg-blue-50 dark:bg-blue-900/20 rounded-full flex items-center justify-center mb-2">
 							<i class="fas fa-folder-plus text-3xl text-blue-500/50"></i>
@@ -88,8 +98,8 @@
 						<span class="text-sm font-bold text-gray-500 dark:text-gray-400">Project Explorer is Empty</span>
 						<span class="text-xs text-gray-400 dark:text-gray-500 max-w-[200px]">Click anywhere in this area to open a project folder</span>
 					</div>
-				{:else}
-					<div class="pb-10 min-w-max">
+				{:else if $fileTreeData.length > 0}
+					<div class="pb-10 min-w-max" class:opacity-30={$isScanning}>
 						{#each filteredTreeData as node}
 							<FileTreeItem {node} />
 						{/each}

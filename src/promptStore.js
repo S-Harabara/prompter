@@ -11,6 +11,8 @@ export const recentFolders = writable([]);
 
 // UI State
 export const explorerFilter = writable('');
+export const isScanning = writable(false);
+export const scanProgress = writable(0);
 export const includeGoal = writable(false);
 export const goalText = writable('');
 export const includeStructure = writable(false);

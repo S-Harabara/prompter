@@ -159,7 +159,9 @@ class IgnoreMatcher {
     }
 }
 
-async function walkDir(dir, baseDir, ignoreFilter) {
+const imageExtensions = ['.png', '.jpg', '.jpeg', '.gif', '.svg', '.webp', '.ico', '.bmp', '.tiff'];
+
+async function walkDir(dir, baseDir, ignoreFilter, onProgress) {
     const fs = await import('fs/promises');
     const path = await import('path');
     const files = await fs.readdir(dir, { withFileTypes: true });
@@ -172,7 +174,7 @@ async function walkDir(dir, baseDir, ignoreFilter) {
         if (ignoreFilter && ignoreFilter.ignores(relativePath)) continue;
 
         if (file.isDirectory()) {
-            const children = await walkDir(fullPath, baseDir, ignoreFilter);
+            const children = await walkDir(fullPath, baseDir, ignoreFilter, onProgress);
             nodes.push({
                 name: file.name,
                 kind: 'directory',
@@ -181,13 +183,18 @@ async function walkDir(dir, baseDir, ignoreFilter) {
                 expanded: false
             });
         } else {
+            const ext = path.extname(file.name).toLowerCase();
+            if (imageExtensions.includes(ext)) continue;
+
+            if (onProgress) onProgress();
+
             const stats = await fs.stat(fullPath);
             nodes.push({
                 name: file.name,
                 kind: 'file',
                 path: relativePath,
                 size: stats.size,
-                isText: true // We can add more logic here if needed
+                isText: true 
             });
         }
     }
@@ -203,11 +210,22 @@ ipcMain.handle('scan-directory', async (event, { projectPath }) => {
         const gitignorePath = path.join(projectPath, '.gitignore');
         ignoreRules = await fs.readFile(gitignorePath, 'utf8');
     } catch (e) {
-        // No .gitignore found, proceed with defaults
+        // No .gitignore found
     }
 
     const matcher = new IgnoreMatcher(ignoreRules);
-    return await walkDir(projectPath, projectPath, matcher); 
+    
+    let scannedCount = 0;
+    const onProgress = () => {
+        scannedCount++;
+        if (scannedCount % 50 === 0) {
+            event.sender.send('scan-progress', scannedCount);
+        }
+    };
+
+    const tree = await walkDir(projectPath, projectPath, matcher, onProgress);
+    event.sender.send('scan-progress', scannedCount); // Final count
+    return tree;
 });
 
 ipcMain.handle('read-file', async (event, { filePath, projectPath }) => {
