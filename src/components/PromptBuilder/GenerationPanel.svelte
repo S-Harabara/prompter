@@ -14,27 +14,7 @@
 		fileHandles
 	} from '../../promptStore.js';
 
-	/** 
-	 * Generates a string representation of the project structure.
-	 */
-	function getProjectStructure() {
-		let res = 'PROJECT STRUCTURE:\n';
-		/** 
-		 * @param {any[]} nodesArr 
-		 * @param {number} d 
-		 */
-		const buildStr = (nodesArr, d) => {
-			nodesArr
-				.sort((a, b) => (a.kind === 'directory' ? -1 : 1))
-				.forEach((n) => {
-					const icon = n.kind === 'directory' ? '📁 ' : '📄 ';
-					res += '  '.repeat(d) + icon + n.name + '\n';
-					if (n.kind === 'directory' && n.children) buildStr(n.children, d + 1);
-				});
-		};
-		buildStr($fileTreeData, 0);
-		return res + '\n';
-	}
+	import { getProjectStructure } from '../../utils/treeUtils.js';
 
 	import { minify as terserMinify } from 'terser';
 	import { minify as cssoMinify } from 'csso';
@@ -125,7 +105,7 @@
 				});
 			}
 
-			if ($includeStructure) res += getProjectStructure();
+			if ($includeStructure) res += getProjectStructure($fileTreeData);
 
 			const paths = Array.from($selectedFiles);
 			for (const p of paths) {

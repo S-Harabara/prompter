@@ -23,25 +23,7 @@
     import { savedSkills, selectedSkillsForPrompt } from '../../skillsStore.js';
     import Button from '../Common/Button.svelte';
     import tippy from 'tippy.js';
-
-    function getProjectStructure() {
-        let res = 'PROJECT STRUCTURE:\n';
-        /** 
-         * @param {any[]} nArr 
-         * @param {number} d 
-         */
-        const buildStr = (nArr, d) => {
-            nArr
-                .sort((a, b) => (a.kind === 'directory' ? -1 : 1))
-                .forEach((/** @type {any} */ n) => {
-                    const icon = n.kind === 'directory' ? '📁 ' : '📄 ';
-                    res += '  '.repeat(d) + icon + n.name + '\n';
-                    if (n.kind === 'directory' && n.children) buildStr(n.children, d + 1);
-                });
-        };
-        buildStr($fileTreeData, 0);
-        return res + '\n';
-    }
+    import { getProjectStructure } from '../../utils/treeUtils.js';
 
     async function generatePrompt() {
         if (!$codeReviewProjectPath || !$sourceBranch || !$targetBranch) {
@@ -70,7 +52,7 @@
                 });
             }
 
-            if ($includeStructure) res += getProjectStructure();
+            if ($includeStructure) res += getProjectStructure($fileTreeData);
 
             res += `GIT DIFF (${$sourceBranch} -> ${$targetBranch}):\n`;
             

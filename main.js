@@ -115,6 +115,50 @@ ipcMain.handle('fetch-branch', async (event, { projectPath, branch }) => {
     }
 });
 
+class IgnoreMatcher {
+    constructor(p = '') { 
+        this.rules = p.split('\n')
+            .map(l => l.trim())
+            .filter(l => l && !l.startsWith('#'))
+            .map(r => { 
+                let n = r.startsWith('!'); 
+                if (n) r = r.slice(1); 
+                // Basic conversion of gitignore-style glob to regex
+                // This is a simplified version:
+                let regexStr = r
+                    .replace(/\./g, '\\.')
+                    .replace(/\*\*/g, '(.+)')
+                    .replace(/\*/g, '([^/]*)');
+                
+                if (r.endsWith('/')) {
+                    regexStr += '(.*)';
+                } else if (!r.includes('/')) {
+                    // If it's just a name, match it anywhere
+                    regexStr = '(.*/)?' + regexStr + '(/.*)?$';
+                }
+
+                try {
+                    return { re: new RegExp(regexStr), isNeg: n };
+                } catch (e) {
+                    console.error('Invalid gitignore rule:', r, e);
+                    return null;
+                }
+            }).filter(Boolean); 
+    }
+    ignores(p) { 
+        // Always ignore .git and node_modules as per user request
+        if (p === '.git' || p.startsWith('.git/') || p === 'node_modules' || p.startsWith('node_modules/')) {
+            return true;
+        }
+
+        let ig = false; 
+        this.rules.forEach(r => { 
+            if (r.re.test(p)) ig = !r.isNeg; 
+        }); 
+        return ig; 
+    }
+}
+
 async function walkDir(dir, baseDir, ignoreFilter) {
     const fs = await import('fs/promises');
     const path = await import('path');
@@ -150,17 +194,20 @@ async function walkDir(dir, baseDir, ignoreFilter) {
     return nodes.sort((a, b) => a.kind === b.kind ? a.name.localeCompare(b.name) : a.kind === 'directory' ? -1 : 1);
 }
 
-ipcMain.handle('scan-directory', async (event, { projectPath, ignoreRules }) => {
-    // Basic ignore logic if not passed
-    const rules = ignoreRules || '.git\nnode_modules\n.next\ndist\nbuild\nout\n.cache';
-    // We reuse the GitIgnore-like logic from main or just pass it
-    // For simplicity, let's just do a basic check here or implement it
+ipcMain.handle('scan-directory', async (event, { projectPath }) => {
+    const fs = await import('fs/promises');
+    const path = await import('path');
     
-    // Actually, it's better to implement the ignore logic in the renderer or pass a filter
-    const { stdout } = await execAsync('ls -R', { cwd: projectPath }).catch(() => ({ stdout: '' })); // just a placeholder
-    
-    // Let's use fs.readdir instead
-    return await walkDir(projectPath, projectPath, null); 
+    let ignoreRules = '';
+    try {
+        const gitignorePath = path.join(projectPath, '.gitignore');
+        ignoreRules = await fs.readFile(gitignorePath, 'utf8');
+    } catch (e) {
+        // No .gitignore found, proceed with defaults
+    }
+
+    const matcher = new IgnoreMatcher(ignoreRules);
+    return await walkDir(projectPath, projectPath, matcher); 
 });
 
 ipcMain.handle('read-file', async (event, { filePath, projectPath }) => {
