@@ -1,12 +1,18 @@
 <script lang="ts">
-	import { removeComments, minifyOutput } from '../../promptStore.js';
+	import { removeComments as defaultRemoveComments, minifyOutput as defaultMinifyOutput } from '../../promptStore.js';
 	import { slide } from 'svelte/transition';
 
 	interface Props {
 		onchange?: () => void;
+		removeComments?: any;
+		minifyOutput?: any;
 	}
 
-	let { onchange }: Props = $props();
+	let { 
+		onchange,
+		removeComments = defaultRemoveComments,
+		minifyOutput = defaultMinifyOutput
+	}: Props = $props();
 
 	let isExpanded = $state(false);
 

@@ -9,8 +9,11 @@ export const savedSkills = writable([]);
 // IDs of favorited skills (now stored in DB too, but we keep the store for reactive UI)
 export const favoriteSkillIds = writable([]);
 
-// Skills currently selected to be included in the next prompt generation
+// Skills currently selected for Prompt Builder
 export const selectedSkillsForPrompt = writable([]);
+
+// Skills currently selected for Code Review
+export const selectedSkillsForReview = writable([]);
 
 // Sorting state
 export const skillSortConfig = writable({
@@ -84,9 +87,14 @@ const getLocalStorage = (key, defaultValue) => {
     }
 };
 
-selectedSkillsForPrompt.set(getLocalStorage('sourceflow_selected_skills', []));
+selectedSkillsForPrompt.set(getLocalStorage('sourceflow_selected_skills_prompt', getLocalStorage('sourceflow_selected_skills', [])));
 selectedSkillsForPrompt.subscribe(value => {
-    localStorage.setItem('sourceflow_selected_skills', JSON.stringify(value));
+    localStorage.setItem('sourceflow_selected_skills_prompt', JSON.stringify(value));
+});
+
+selectedSkillsForReview.set(getLocalStorage('sourceflow_selected_skills_review', []));
+selectedSkillsForReview.subscribe(value => {
+    localStorage.setItem('sourceflow_selected_skills_review', JSON.stringify(value));
 });
 
 /**
@@ -137,6 +145,18 @@ export const toggleFavorite = async (id) => {
  */
 export const togglePromptSelection = (id) => {
     selectedSkillsForPrompt.update((/** @type {any} */ selected) => {
+        if (selected.includes(id)) {
+            return selected.filter((/** @type {any} */ selId) => selId !== id);
+        }
+        return [...selected, id];
+    });
+};
+
+/**
+ * @param {string} id
+ */
+export const toggleReviewSelection = (id) => {
+    selectedSkillsForReview.update((/** @type {any} */ selected) => {
         if (selected.includes(id)) {
             return selected.filter((/** @type {any} */ selId) => selId !== id);
         }

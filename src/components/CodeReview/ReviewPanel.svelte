@@ -7,9 +7,8 @@
         isGenerating,
         previewSize,
         previewTokens,
-        fileTreeData
-    } from '../../promptStore.js';
-    import { 
+        removeComments,
+        minifyOutput,
         sourceBranch, 
         targetBranch, 
         codeReviewProjectPath,
@@ -17,10 +16,11 @@
         isSourceLocal,
         isTargetLocal 
     } from '../../codeReviewStore.js';
+    import { fileTreeData } from '../../promptStore.js';
     import { getGitDiff } from '../../utils/gitUtils.js';
     import TransformationPanel from '../PromptBuilder/TransformationPanel.svelte';
     import SkillsSelector from '../PromptBuilder/SkillsSelector.svelte';
-    import { savedSkills, selectedSkillsForPrompt, incrementSkillUsage } from '../../skillsStore.js';
+    import { savedSkills, selectedSkillsForReview, toggleReviewSelection, incrementSkillUsage } from '../../skillsStore.js';
     import Button from '../Common/Button.svelte';
     import tippy from 'tippy.js';
     import { getProjectStructure } from '../../utils/treeUtils.js';
@@ -59,7 +59,7 @@
             if ($includeGoal) res += `GOAL:\n${$goalText}\n\n`;
 
             // Inject Skills
-            const selectedSkills = $savedSkills.filter((/** @type {any} */ s) => $selectedSkillsForPrompt.includes(s.id));
+            const selectedSkills = $savedSkills.filter((/** @type {any} */ s) => $selectedSkillsForReview.includes(s.id));
             if (selectedSkills.length > 0) {
                 res += `SKILLS INSTRUCTIONS:\n`;
                 selectedSkills.forEach((/** @type {any} */ skill) => {
@@ -133,9 +133,9 @@
             {/if}
             
             <div class="w-full mt-3.5">
-                <TransformationPanel onchange={generatePrompt} />
+                <TransformationPanel onchange={generatePrompt} removeComments={removeComments} minifyOutput={minifyOutput} />
                 <div class="mt-2 text-left w-full">
-                    <SkillsSelector onchange={generatePrompt} />
+                    <SkillsSelector onchange={generatePrompt} selectionStore={selectedSkillsForReview} toggleFunction={toggleReviewSelection} />
                 </div>
             </div>
         </div>

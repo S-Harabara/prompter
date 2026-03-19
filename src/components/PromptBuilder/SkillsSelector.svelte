@@ -1,12 +1,23 @@
 <script lang="ts">
     import { fade, scale } from 'svelte/transition';
-    import { savedSkills, selectedSkillsForPrompt, togglePromptSelection, favoriteSkillIds } from '../../skillsStore.js';
+    import { 
+        savedSkills, 
+        selectedSkillsForPrompt as defaultSelection, 
+        togglePromptSelection as defaultToggle, 
+        favoriteSkillIds 
+    } from '../../skillsStore.js';
     
     interface Props {
         onchange?: () => void;
+        selectionStore?: any;
+        toggleFunction?: (id: string) => void;
     }
 
-    let { onchange }: Props = $props();
+    let { 
+        onchange, 
+        selectionStore = defaultSelection, 
+        toggleFunction = defaultToggle 
+    }: Props = $props();
 
     let open = $state(false);
     let searchQuery = $state('');
@@ -27,11 +38,11 @@
           )
         : sortedSkills);
 
-    const selectedCount = $derived($selectedSkillsForPrompt.length);
+    const selectedCount = $derived($selectionStore.length);
 
     /** @param {string} id */
     function toggle(id: string) {
-        togglePromptSelection(id);
+        toggleFunction(id);
         onchange?.();
     }
 
@@ -42,15 +53,15 @@
 
     function selectAll() {
         filtered.forEach(s => {
-            if (!$selectedSkillsForPrompt.includes(s.id)) {
-                togglePromptSelection(s.id);
+            if (!$selectionStore.includes(s.id)) {
+                toggleFunction(s.id);
             }
         });
         onchange?.();
     }
 
     function clearAll() {
-        $selectedSkillsForPrompt.forEach((id: string) => togglePromptSelection(id));
+        $selectionStore.forEach((id: string) => toggleFunction(id));
         onchange?.();
     }
 </script>
@@ -140,7 +151,7 @@
                     </div>
                 {:else}
                     {#each filtered as skill (skill.id)}
-                        {@const isSelected = $selectedSkillsForPrompt.includes(skill.id)}
+                        {@const isSelected = $selectionStore.includes(skill.id)}
                         {@const isFav = $favoriteSkillIds.includes(skill.id)}
                         <!-- svelte-ignore a11y-click-events-have-key-events -->
                         <div
