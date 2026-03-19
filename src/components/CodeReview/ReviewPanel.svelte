@@ -24,6 +24,21 @@
     import Button from '../Common/Button.svelte';
     import tippy from 'tippy.js';
     import { getProjectStructure } from '../../utils/treeUtils.js';
+    import VirtualPromptEditor from '../Common/VirtualPromptEditor.svelte';
+
+    let isDirty = $state(false);
+    /** @type {any} */
+    let editorComponent = $state();
+
+    async function safeGeneratePrompt() {
+        if (isDirty) {
+            if (!confirm('You have manually edited the output. Regenerating will override your changes. Continue?')) {
+                return;
+            }
+        }
+        await generatePrompt();
+        isDirty = false;
+    }
 
     async function generatePrompt() {
         if (!$codeReviewProjectPath || !$sourceBranch || !$targetBranch) {
@@ -100,11 +115,11 @@
         <div class="shrink-0">
             <div class="flex items-center justify-between">
                 <label class="flex items-center gap-2 cursor-pointer">
-                    <input type="checkbox" bind:checked={$includeGoal} class="w-4 h-4 rounded border-gray-300" />
+                    <input type="checkbox" bind:checked={$includeGoal} onchange={safeGeneratePrompt} class="w-4 h-4 rounded border-gray-300" />
                     <span class="text-[11px] font-bold py-1 text-gray-600 dark:text-gray-400">Include Project Goal</span>
                 </label>
                 <label class="flex items-center gap-2 cursor-pointer">
-                    <input type="checkbox" bind:checked={$includeStructure} class="w-4 h-4 rounded border-gray-300" />
+                    <input type="checkbox" bind:checked={$includeStructure} onchange={safeGeneratePrompt} class="w-4 h-4 rounded border-gray-300" />
                     <span class="text-[11px] font-bold py-1 text-gray-600 dark:text-gray-400">Include Structure</span>
                 </label>
             </div>
@@ -124,26 +139,31 @@
             </div>
         </div>
 
-        <div class="grow flex flex-col relative overflow-hidden bg-gray-100 dark:bg-gray-900/40 rounded-xl p-1 w-full min-h-[100px]">
+        <div class="grow flex flex-col relative overflow-hidden bg-white dark:bg-gray-900/40 rounded-xl p-0.5 border dark:border-none w-full min-h-[100px]">
             {#if $isGenerating}
-                <div class="absolute inset-0 bg-white/50 dark:bg-dark-bg/50 backdrop-blur-sm z-50 flex items-center justify-center rounded-xl">
+                <div class="absolute inset-0 bg-white/50 dark:bg-dark-bg/50 backdrop-blur-sm z-100 flex items-center justify-center rounded-xl">
                     <div class="flex flex-col items-center gap-3">
                         <div class="w-8 h-8 border-3 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
                         <span class="text-xs font-bold text-blue-600">Generating Diff...</span>
                     </div>
                 </div>
             {/if}
-            <textarea
+
+            <div class="absolute top-2 right-4 z-50 flex gap-1">
+                <Button onclick={() => editorComponent?.expandAll()} variant="ghost" class="px-2! py-1! text-[9px]! text-gray-400 hover:text-blue-500" icon="fas fa-expand-arrows-alt" label="EXPAND ALL" />
+                <Button onclick={() => editorComponent?.collapseAll()} variant="ghost" class="px-2! py-1! text-[9px]! text-gray-400 hover:text-blue-500" icon="fas fa-compress-arrows-alt" label="COLLAPSE ALL" />
+            </div>
+
+            <VirtualPromptEditor
+                bind:this={editorComponent}
                 bind:value={$generatedOutput}
-                class="w-full h-full bg-transparent border-none p-4 font-mono text-[11px] outline-none custom-scrollbar resize-none absolute inset-0 pb-1"
-                readonly
-                placeholder="Git diff and prompt will appear here..."
-            ></textarea>
+                bind:isDirty={isDirty}
+            />
         </div>
 
         <div class="flex items-center justify-between gap-4 pt-1 shrink-0">
             <Button
-                onclick={generatePrompt}
+                onclick={safeGeneratePrompt}
                 variant="primary"
                 class="grow"
                 icon="fas fa-wand-magic-sparkles"
