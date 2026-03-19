@@ -16,7 +16,11 @@ export class GitIgnore {
 }
 
 export function isTextFile(n) { 
-    return ['.vue', '.js', '.ts', '.tsx', '.jsx', '.css', '.html', '.json', '.md', '.py', '.go', '.rs', '.php', '.rb', '.txt', '.sh', '.yaml', '.yml', '.lock', '.toml', '.svelte'].some(e => n.toLowerCase().endsWith(e)) || ['Makefile', 'Dockerfile', 'root'].includes(n); 
+    const textExtensions = ['.js', '.jsx', '.ts', '.tsx', '.vue', '.svelte', '.html', '.css', '.scss', '.less', '.json', '.md', '.txt', '.py', '.rb', '.go', '.rs', '.c', '.cpp', '.h', '.hpp', '.java', '.php', '.sh', '.yaml', '.yml', '.xml', '.sql', '.gradle', '.properties', '.ini', '.env', '.toml', '.lock', '.gitignore', '.dockerignore', '.editorconfig', '.babelrc', '.eslintrc', '.prettierrc'];
+    const ext = n.substring(n.lastIndexOf('.')).toLowerCase();
+    if (textExtensions.includes(ext)) return true;
+    const name = n.toLowerCase();
+    return ['makefile', 'dockerfile', 'root', 'license', 'readme'].includes(name);
 }
 
 import { isScanning, scanProgress } from '../promptStore.js';

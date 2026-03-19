@@ -159,7 +159,25 @@ class IgnoreMatcher {
     }
 }
 
-const imageExtensions = ['.png', '.jpg', '.jpeg', '.gif', '.svg', '.webp', '.ico', '.bmp', '.tiff'];
+const textExtensions = new Set([
+    '.js', '.jsx', '.ts', '.tsx', '.vue', '.svelte', '.html', '.css', '.scss', '.less',
+    '.json', '.md', '.txt', '.py', '.rb', '.go', '.rs', '.c', '.cpp', '.h', '.hpp',
+    '.java', '.php', '.sh', '.yaml', '.yml', '.xml', '.sql', '.gradle', '.properties',
+    '.ini', '.env', '.toml', '.lock', '.gitignore', '.dockerignore', '.editorconfig',
+    '.babelrc', '.eslintrc', '.prettierrc'
+]);
+
+const textFilenames = new Set([
+    'makefile', 'dockerfile', 'root', 'license', 'readme'
+]);
+
+function isTextFile(filename) {
+    const ext = path.extname(filename).toLowerCase();
+    if (textExtensions.has(ext)) return true;
+    const name = path.basename(filename).toLowerCase();
+    if (textFilenames.has(name)) return true;
+    return false;
+}
 
 async function walkDir(dir, baseDir, ignoreFilter, onProgress) {
     const fs = await import('fs/promises');
@@ -183,9 +201,6 @@ async function walkDir(dir, baseDir, ignoreFilter, onProgress) {
                 expanded: false
             });
         } else {
-            const ext = path.extname(file.name).toLowerCase();
-            if (imageExtensions.includes(ext)) continue;
-
             if (onProgress) onProgress();
 
             const stats = await fs.stat(fullPath);
@@ -194,7 +209,7 @@ async function walkDir(dir, baseDir, ignoreFilter, onProgress) {
                 kind: 'file',
                 path: relativePath,
                 size: stats.size,
-                isText: true 
+                isText: isTextFile(file.name)
             });
         }
     }

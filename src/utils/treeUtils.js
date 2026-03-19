@@ -86,18 +86,14 @@ export function getProjectStructure(treeData, prefix = '', projectName = '') {
 
     res = projectName ? `${projectName}/\n` : '';
     
-    const imageExtensions = ['.png', '.jpg', '.jpeg', '.gif', '.svg', '.webp', '.ico', '.bmp', '.tiff'];
-    /** @param {string} name */
-    const isImageFile = (name) => imageExtensions.some(ext => name.toLowerCase().endsWith(ext));
-
     /** @param {any} node */
-    const isOnlyImagesRecursive = (node) => {
+    const isOnlyNonTextRecursive = (node) => {
         if (node.kind === 'file') {
-            return isImageFile(node.name);
+            return !node.isText;
         }
         if (node.kind === 'directory') {
             if (!node.children || node.children.length === 0) return true; 
-            return node.children.every((/** @type {any} */ child) => isOnlyImagesRecursive(child));
+            return node.children.every((/** @type {any} */ child) => isOnlyNonTextRecursive(child));
         }
         return false;
     };
@@ -110,8 +106,8 @@ export function getProjectStructure(treeData, prefix = '', projectName = '') {
         const sorted = [...nodes]
             .filter((/** @type {any} */ node) => {
                 if (node.name === 'node_modules' || node.name === '.git') return false;
-                if (node.kind === 'directory' && isOnlyImagesRecursive(node)) return false;
-                if (node.kind === 'file' && isImageFile(node.name)) return false; // Also ignore loose images
+                if (node.kind === 'directory' && isOnlyNonTextRecursive(node)) return false;
+                if (node.kind === 'file' && !node.isText) return false; 
                 return true;
             })
             .sort((a, b) => {
@@ -127,19 +123,14 @@ export function getProjectStructure(treeData, prefix = '', projectName = '') {
 
             // Determine if it's a "boring" directory to summarize
             let isSummarized = false;
+            // Assets folders are now redundant if we are already filtering non-text,
+            // but we'll keep a check for "many non-standard text files" if needed, 
+            // though the filter above already handles the common cases.
             if (node.kind === 'directory' && node.children && node.children.length > 8) {
-                /** @type {any[]} */
-                const files = node.children.filter((/** @type {any} */ c) => c.kind === 'file');
-                const imageExtensions = ['.png', '.jpg', '.jpeg', '.gif', '.svg', '.webp', '.ico'];
-                const isAssetFolder = files.length > 5 && files.every((/** @type {any} */ f) => imageExtensions.some(ext => f.name.toLowerCase().endsWith(ext)));
-                
-                if (isAssetFolder) {
+                const nonTextFiles = node.children.filter((/** @type {any} */ c) => c.kind === 'file' && !c.isText);
+                if (nonTextFiles.length > 5) {
                     res += `${currentPrefix}${branch}${node.name}/\n`;
-                    const firstTwo = files.slice(0, 2);
-                    firstTwo.forEach((/** @type {any} */ f, fIdx) => {
-                         res += `${nextPrefix}├── ${f.name}\n`;
-                    });
-                    res += `${nextPrefix}└── ... (${files.length - 2} more assets)\n`;
+                    res += `${nextPrefix}└── ... (${nonTextFiles.length} non-text assets hidden)\n`;
                     isSummarized = true;
                 }
             }

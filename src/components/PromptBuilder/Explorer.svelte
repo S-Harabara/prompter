@@ -87,6 +87,7 @@
 							<div class="absolute inset-0 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
 						</div>
 						<span class="text-sm font-bold text-gray-700 dark:text-gray-200">Scanning Project...</span>
+						<span class="text-[10px] text-gray-500 dark:text-gray-400 mt-1 font-mono">{$scanProgress} files found</span>
 					</div>
 				{/if}
 
