@@ -20,9 +20,14 @@
     "directories": {
       "output": "release"
     },
+    "asar": true,
+    "asarUnpack": [
+      "**/node_modules/better-sqlite3/**/*"
+    ],
     "files": [
       "dist/**/*",
-      "main.js"
+      "main.js",
+      "db.js"
     ]
   },
   "dependencies": {
