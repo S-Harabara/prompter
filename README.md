@@ -1,65 +1,87 @@
-# Svelte library
+# 🚀 SourceFlow
 
-Everything you need to build a Svelte library, powered by [`sv`](https://npmjs.com/package/sv).
+[![Svelte](https://img.shields.io/badge/Svelte-5-ff3e00?logo=svelte)](https://svelte.dev/)
+[![Electron](https://img.shields.io/badge/Electron-33-47848f?logo=electron)](https://www.electronjs.org/)
+[![Vite](https://img.shields.io/badge/Vite-6-646cff?logo=vite)](https://vitejs.dev/)
+[![Tailwind](https://img.shields.io/badge/Tailwind-4-06b6d4?logo=tailwind-css)](https://tailwindcss.com/)
 
-Read more about creating a library [in the docs](https://svelte.dev/docs/kit/packaging).
+SourceFlow is a premium Electron-based prompt engineering studio designed for developers. It streamlines the creation, management, and optimization of LLM prompts with a focus on project-aware context and modular skills.
 
-## Creating a project
+---
 
-If you're seeing this, you've probably already done this step. Congrats!
+## ✨ Key Features
 
-```sh
-# create a new project in the current directory
-npx sv create
+- **🛠️ Prompt Builder**: A sophisticated interface to craft prompts by selecting specific files and folders from your project.
+- **🔍 Code Review Pro**: Specialized tool for generating high-quality code review prompts by comparing git branches.
+- **🧠 Skill Library**: Import, create, and reuse "Skills"—modular pieces of prompt logic that can be shared across projects.
+- **📜 Smart History**: Automatically records all generated prompts in a local SQLite database for easy retrieval and tracking.
+- **📟 Token Estimation**: Real-time token counting.
+- **📂 Intelligent Scanner**: Automatically respects `.gitignore` rules and excludes heavy directories like `node_modules` and `.git`.
+- **💻 Modern Editor**: Integrated CodeMirror 6 with syntax highlighting and virtual scrolling for handling large prompts efficiently.
 
-# create a new project in my-app
-npx sv create my-app
-```
+## 🛠️ Built With
 
-To recreate this project with the same configuration:
+- **Frontend**: [Svelte 5](https://svelte.dev/) (Runes), [Tailwind CSS 4](https://tailwindcss.com/)
+- **Runtime**: [Electron](https://www.electronjs.org/) & [Node.js](https://nodejs.org/)
+- **Database**: [SQLite](https://sqlite.org/) (via `better-sqlite3`)
+- **Editor**: [CodeMirror 6](https://codemirror.net/)
+- **UI Toolkit**: [Animate.css](https://animate.style/), [Tippy.js](https://atomiks.github.io/tippyjs/)
 
-```sh
-# recreate this project
-npx sv@0.12.7 create --template library --types ts --add prettier eslint tailwindcss="plugins:typography,forms" --install npm myapp
-```
+## 📂 Project Structure
 
-## Developing
+| Directory / File | Description |
+| :--- | :--- |
+| `main.js` | Electron main process, handles IPC and system interactions. |
+| `db.js` | Database schema definition and local persistence logic. |
+| `src/` | Frontend source code. |
+| `src/App.svelte` | Root Svelte component and layout manager. |
+| `src/views/` | Main application views (Builder, Review, History, Skills). |
+| `src/components/` | Reusable UI design system and shared components. |
+| `src/lib/` | Application state management using Svelte stores. |
+| `src/utils/` | Internal utilities for tokenization, scanning, and formatting. |
+| `public/` | Static assets and icons. |
 
-Once you've created a project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
+## 🚀 Getting Started
 
-```sh
+### Prerequisites
+
+- Node.js (Latest LTS recommended)
+- npm
+
+### Installation
+
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/S-Harabara/prompter.git
+   cd prompter
+   ```
+
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
+
+### Development
+
+Start the Vite dev server and Electron app simultaneously:
+```bash
 npm run dev
-
-# or start the server and open the app in a new browser tab
-npm run dev -- --open
 ```
 
-Everything inside `src/lib` is part of your library, everything inside `src/routes` can be used as a showcase or preview app.
+### Production Build
 
-## Building
-
-To build your library:
-
-```sh
-npm pack
+To package the application for your current platform:
+```bash
+npm run package
 ```
+*Executables will be generated in the `release/` directory.*
 
-To create a production version of your showcase app:
+## 📐 Project Best Practices
 
-```sh
-npm run build
-```
+- **Svelte 5 Runes**: The project uses `$state`, `$derived`, and `$props` for modern reactivity and performance.
+- **IPC Security**: All heavy lifting (file system, database, git commands) is handled in the main process and exposed via secure IPC handlers.
+- **Modular Stores**: Each major feature (History, Skills, Prompts) has its own dedicated store for focused state management.
+- **SQLite Persistence**: All local state that needs to survive restarts is stored in structured relational tables.
 
-You can preview the production build with `npm run preview`.
-
-> To deploy your app, you may need to install an [adapter](https://svelte.dev/docs/kit/adapters) for your target environment.
-
-## Publishing
-
-Go into the `package.json` and give your package the desired name through the `"name"` option. Also consider adding a `"license"` field and point it to a `LICENSE` file which you can create from a template (one popular option is the [MIT license](https://opensource.org/license/mit/)).
-
-To publish your library to [npm](https://www.npmjs.com):
-
-```sh
-npm publish
-```
+---
+*Built with ❤️ for the developer community.*
