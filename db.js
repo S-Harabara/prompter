@@ -1,6 +1,7 @@
 import Database from 'better-sqlite3';
 import path from 'path';
 import { app } from 'electron';
+import crypto from 'crypto';
 
 let db;
 
@@ -42,6 +43,22 @@ export function initDb() {
         BEGIN
             UPDATE skills SET updated_at = CURRENT_TIMESTAMP WHERE id = OLD.id;
         END
+    `);
+
+    // Create history table
+    db.exec(`
+        CREATE TABLE IF NOT EXISTS history (
+            id TEXT PRIMARY KEY,
+            type TEXT NOT NULL,
+            root_folder_name TEXT,
+            token_count INTEGER,
+            char_count INTEGER,
+            skills_used TEXT,
+            skills_count INTEGER,
+            content TEXT,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            custom_id TEXT
+        )
     `);
 
     console.log('Database initialized at:', dbPath);
@@ -149,4 +166,46 @@ export function bulkAddSkills(skills) {
     });
 
     return transaction(skills);
+}
+
+export function addHistory(entry) {
+    const stmt = db.prepare(`
+        INSERT INTO history (
+            id, type, root_folder_name, token_count, char_count, 
+            skills_used, skills_count, content, created_at, custom_id
+        ) VALUES (
+            @id, @type, @root_folder_name, @token_count, @char_count, 
+            @skills_used, @skills_count, @content, @created_at, @custom_id
+        )
+    `);
+
+    return stmt.run({
+        ...entry,
+        id: entry.id || crypto.randomUUID(),
+        skills_used: entry.skills_used ? JSON.stringify(entry.skills_used) : '[]',
+        created_at: entry.created_at || new Date().toISOString(),
+        custom_id: entry.custom_id || (entry.id || crypto.randomUUID()).slice(0, 8)
+    });
+}
+
+export function getHistory(page = 1, pageSize = 30) {
+    const offset = (page - 1) * pageSize;
+    const stmt = db.prepare(`
+        SELECT * FROM history 
+        ORDER BY created_at DESC 
+        LIMIT ? OFFSET ?
+    `);
+    
+    return stmt.all(pageSize, offset).map(entry => ({
+        ...entry,
+        skills_used: JSON.parse(entry.skills_used || '[]')
+    }));
+}
+
+export function getHistoryCount() {
+    return db.prepare('SELECT COUNT(*) as count FROM history').get().count;
+}
+
+export function deleteHistory(id) {
+    return db.prepare('DELETE FROM history WHERE id = ?').run(id);
 }

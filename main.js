@@ -3,7 +3,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { exec } from 'child_process';
 import { promisify } from 'util';
-import { initDb, getSkills, addSkill, updateSkill, deleteSkill, incrementUsage, bulkAddSkills } from './db.js';
+import { initDb, getSkills, addSkill, updateSkill, deleteSkill, incrementUsage, bulkAddSkills, addHistory, getHistory, getHistoryCount, deleteHistory } from './db.js';
 
 const execAsync = promisify(exec);
 
@@ -274,6 +274,22 @@ ipcMain.handle('db:increment-usage', async (event, id) => {
 
 ipcMain.handle('db:bulk-add-skills', async (event, skills) => {
     return bulkAddSkills(skills);
+});
+
+ipcMain.handle('db:add-history', async (event, entry) => {
+    return addHistory(entry);
+});
+
+ipcMain.handle('db:get-history', async (event, { page, pageSize }) => {
+    return getHistory(page, pageSize);
+});
+
+ipcMain.handle('db:get-history-count', async (event) => {
+    return getHistoryCount();
+});
+
+ipcMain.handle('db:delete-history', async (event, id) => {
+    return deleteHistory(id);
 });
 
 // File IPC Handlers

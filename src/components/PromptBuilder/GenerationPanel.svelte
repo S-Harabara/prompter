@@ -84,6 +84,9 @@
 	import Button from '../Common/Button.svelte';
 	import VirtualPromptEditor from '../Common/VirtualPromptEditor.svelte';
 	import { savedSkills, selectedSkillsForPrompt, incrementSkillUsage } from '../../skillsStore.js';
+	import { addToHistory } from '../../historyStore.js';
+	import { folderName } from '../../promptStore.js';
+    import { get } from 'svelte/store';
 
 	let isDirty = $state(false);
 	/** @type {any} */
@@ -144,6 +147,17 @@
 			}
 
 			generatedOutput.set(res.trim());
+
+			// Save to history
+			addToHistory({
+				type: 'prompt_builder',
+				root_folder_name: get(folderName),
+				token_count: get(previewTokens),
+				char_count: res.trim().length,
+				skills_used: selectedSkills.map((/** @type {any} */ s) => s.name),
+				skills_count: selectedSkills.length,
+				content: res.trim()
+			});
 		} catch (error) {
 			console.error('Error in generatePrompt:', error);
 			alert('An error occurred during generation. Check console for details.');

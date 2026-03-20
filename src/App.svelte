@@ -6,6 +6,7 @@
     import SkillsLibrary from './views/SkillsLibrary.svelte';
     import ImportExport from './views/ImportExport.svelte';
     import FileModal from './components/PromptBuilder/FileModal.svelte';
+    import History from './views/History.svelte';
     import { currentView } from './store.js';
 
     let isDark = false;
@@ -28,6 +29,8 @@
             <CodeReview />
         {:else if $currentView === 'importExport'}
             <ImportExport />
+        {:else if $currentView === 'history'}
+            <History />
         {/if}
     </div>
     <FileModal />

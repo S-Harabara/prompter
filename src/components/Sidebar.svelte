@@ -7,6 +7,7 @@
 		{ id: 'promptBuilder', label: 'Prompt Builder', icon: 'fas fa-hammer' },
 		{ id: 'codeReview', label: 'Code Review', icon: 'fas fa-code-pull-request' },
 		{ id: 'skillsLibrary', label: 'Skills Library', icon: 'fa-solid fa-splotch' },
+		{ id: 'history', label: 'History', icon: 'fas fa-clock-rotate-left' },
 		{ id: 'importExport', label: 'Import/Export', icon: 'fas fa-file-export' }
 	];
 

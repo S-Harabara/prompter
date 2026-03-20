@@ -25,6 +25,8 @@
     import tippy from 'tippy.js';
     import { getProjectStructure } from '../../utils/treeUtils.js';
     import VirtualPromptEditor from '../Common/VirtualPromptEditor.svelte';
+    import { addToHistory } from '../../historyStore.js';
+    import { get } from 'svelte/store';
 
     let isDirty = $state(false);
     /** @type {any} */
@@ -76,6 +78,18 @@
             res += diff + '\n\n';
 
             generatedOutput.set(res.trim());
+
+            // Save to history
+            const projectName = $codeReviewProjectPath ? $codeReviewProjectPath.split(/[/\\]/).pop() : 'Unknown';
+            addToHistory({
+                type: 'code_review',
+                root_folder_name: projectName,
+                token_count: get(previewTokens),
+                char_count: res.trim().length,
+                skills_used: selectedSkills.map((/** @type {any} */ s) => s.name),
+                skills_count: selectedSkills.length,
+                content: res.trim()
+            });
         } catch (error) {
             console.error('Error in generateCodeReviewPrompt:', error);
             alert('An error occurred during diff generation. Check console for details.');
